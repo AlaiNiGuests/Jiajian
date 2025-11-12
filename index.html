@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>一年级减法练习（动态格子数量记忆）</title>
+<style>
+body{
+  font-family:"Comic Sans MS",sans-serif;
+  background: linear-gradient(180deg,#fafff2,#e6ffe6);
+  margin:0; padding:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  min-height:100vh; box-sizing:border-box;
+}
+h1{ margin-top:16px; color:#44aa55; text-shadow:2px 2px 0 #fff; }
+.panel{ width:100%; max-width:720px; padding:12px; box-sizing:border-box; text-align:center; }
+button{
+  background:#b0f2b6; border:none; border-radius:12px; padding:10px 18px; margin:6px;
+  font-size:1.05em; cursor:pointer; box-shadow:2px 3px 0 #86c88d;
+}
+button:hover{ transform:scale(1.03); }
+#modeSelect h3{ margin:8px 0 4px; color:#368a44; }
+#specialChoices{ display:flex; justify-content:center; gap:10px; margin:8px 0; flex-wrap:wrap; }
+.chk{ display:flex; flex-direction:column; align-items:center; background:#f2fff5; padding:6px 8px; border-radius:8px; }
+.chk input{ transform:scale(1.2); margin-bottom:6px; }
+hr{ width:80%; border:none; height:1px; background:#d1f0d3; margin:12px auto; }
+
+/* 游戏界面 */
+#game{ display:none; width:100%; max-width:720px; margin-top:8px; text-align:center; padding:8px; box-sizing:border-box; }
+#topBar{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
+#returnBtn{ background:#d8f9d8; box-shadow:2px 3px 0 #a2caa2; padding:8px 12px; border-radius:10px; }
+#question{ font-size:2em; color:#44aa55; margin:10px 0; }
+
+#answers { text-align:center; margin-top:10px; }
+.answerRow { display:flex; justify-content:center; flex-wrap:nowrap; margin-bottom:8px; }
+.answer {
+  background:#e1fbe2; border:none; border-radius:50%;
+  width:70px; height:70px; font-size:1.5em;
+  box-shadow:2px 3px 0 #a3dca4; cursor:pointer; transition:transform 0.15s;
+}
+.answer:hover { transform:scale(1.05); }
+.answer.correct { background:#a5ffb3; }
+.answer.wrong { background:#ffb3b3; animation:shake 0.28s; }
+
+@keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-8px)}100%{transform:translateX(0)}}
+
+/* 动态格子 */
+#gridHint{ display:none; margin-top:14px; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
+.gridBox{ display:grid; grid-template-columns:repeat(5,40px); grid-template-rows:repeat(2,40px); gap:6px; }
+.gridCell{ width:40px; height:40px; border-radius:6px; background:#f0f0f0; border:2px solid #cce0cc; transition:background 0.3s; }
+.gridCell.filled{ background:#7ed957; border-color:#58b944; animation:lightUp 0.25s ease-out forwards; }
+@keyframes lightUp{
+  0%{ background:#d3ffd3; transform:scale(0.7); }
+  80%{ background:#91f276; transform:scale(1.05); }
+  100%{ background:#7ed957; transform:scale(1); }
+}
+.labelNum{ font-size:1.3em; color:#338a44; margin-top:8px; }
+
+.star{ position:fixed; font-size:2em; color:gold; animation:starFly 1s ease-out forwards; }
+@keyframes starFly{0%{ transform:scale(0); opacity:1; top:50%; left:50% }100%{ transform:scale(1.8) translateY(-200px); opacity:0 }}
+
+@keyframes popin{
+  0%{transform:translate(-50%,-50%) scale(0.2);opacity:0;}
+  80%{transform:translate(-50%,-50%) scale(1.05);opacity:1;}
+  100%{transform:translate(-50%,-50%) scale(1);}
+}
+</style>
+</head>
+<body>
+<h1>一年级减法练习</h1>
+
+<div id="modeSelect" class="panel">
+  <h3>请选择练习模式</h3>
+  <div>
+    <button onclick="enterOrdinary()">普通模式（错了才显示格子）</button>
+    <button onclick="enterHandMode()">格子模式（每题都显示格子）</button>
+  </div>
+  <hr>
+  <h3>🧠 专项训练（可多选）</h3>
+  <div id="specialChoices">
+    <label class="chk"><input type="checkbox" value="5">5</label>
+    <label class="chk"><input type="checkbox" value="6">6</label>
+    <label class="chk"><input type="checkbox" value="7">7</label>
+    <label class="chk"><input type="checkbox" value="8">8</label>
+    <label class="chk"><input type="checkbox" value="9">9</label>
+  </div>
+  <div><button onclick="startSpecial()">开始专项训练</button></div>
+</div>
+
+<div id="game" class="panel">
+  <div id="topBar">
+    <div style="visibility:hidden"></div>
+    <div id="modeTag" style="font-size:0.95em;color:#666;"></div>
+    <button id="returnBtn" onclick="returnHome()">🏠 返回首页</button>
+  </div>
+
+  <div id="question"></div>
+  <div id="answers"></div>
+
+  <div id="gridHint">
+    <div class="gridBox" id="gridBox"></div>
+    <div class="labelNum" id="gridLabel"></div>
+  </div>
+
+  <div id="stats"></div>
+</div>
+
+<script>
+let correctCount=0,wrongCount=0,questionCount=0;
+let currentA=0,currentB=0;
+let recentQuestions=[];
+let defaultShowHands=false,alwaysShowHands=false,specialSet=null;
+let correctStreak=0;
+
+function enterOrdinary(){specialSet=null;alwaysShowHands=false;defaultShowHands=false;startGame('普通模式 (错了才显示格子)');}
+function enterHandMode(){specialSet=null;alwaysShowHands=true;defaultShowHands=true;startGame('格子模式 (每题显示格子)');}
+function startSpecial(){
+  const boxes=Array.from(document.querySelectorAll('#specialChoices input[type=checkbox]'));
+  const sel=boxes.filter(b=>b.checked).map(b=>parseInt(b.value));
+  if(sel.length===0){alert('请至少选择一个专项训练的数字（5-9）后再开始。');return;}
+  specialSet=sel;
+  const wantShow=confirm('进入专项训练：\\n已选择：'+sel.join(',')+'\\n\\n是否默认显示格子？\\n（确定 = 默认显示；取消 = 只在答错时显示）');
+  defaultShowHands=!!wantShow;alwaysShowHands=!!wantShow;
+  startGame('专项训练（'+sel.join(',')+'）');
+}
+function startGame(modeTagText){
+  correctCount=wrongCount=questionCount=correctStreak=0;recentQuestions=[];
+  document.getElementById('modeSelect').style.display='none';
+  document.getElementById('game').style.display='block';
+  document.getElementById('modeTag').innerText=modeTagText;
+  nextQuestion();
+}
+function returnHome(){
+  specialSet=null;defaultShowHands=false;alwaysShowHands=false;
+  document.getElementById('game').style.display='none';
+  document.getElementById('modeSelect').style.display='block';
+  document.querySelectorAll('#specialChoices input[type=checkbox]').forEach(cb=>cb.checked=false);
+  document.getElementById('stats').innerText='';
+}
+function nextQuestion(){
+  questionCount++;hideGridHint();
+  let a,b;let tries=0;
+  do{
+    tries++;
+    if(Array.isArray(specialSet)&&specialSet.length>0){
+      a=specialSet[Math.floor(Math.random()*specialSet.length)];
+      b=randInt(1,Math.max(1,a-1));
+    }else{
+      const difficulty=Math.min(1,questionCount/20);
+      if(Math.random()<0.4+0.6*difficulty)a=randInt(5,9);else a=randInt(2,5);
+      if(Math.random()<0.05)b=0;else{const minDiff=Math.floor((1-difficulty)*3);const maxB=a-Math.max(1,minDiff);b=randInt(0,Math.max(0,maxB));if(b>=a)b=a-1;}
+    }
+  }while((a>9||b>9||b<0||a<b||recentQuestions.some(q=>q.a===a&&q.b===b))&&tries<12);
+  recentQuestions.push({a,b});if(recentQuestions.length>8)recentQuestions.shift();
+  currentA=a;currentB=b;
+  document.getElementById('question').innerText=`${a} - ${b} = ?`;
+  renderAnswers(a-b);
+  if(alwaysShowHands||defaultShowHands)showGridHint(a,true);
+}
+function renderAnswers(correctAns){
+  const box=document.getElementById('answers');box.innerHTML='';
+  const rows=[[0,1,2,3,4,5],[6,7,8,9,10]];
+  rows.forEach(row=>{
+    const div=document.createElement('div');div.className='answerRow';
+    row.forEach(opt=>{
+      const btn=document.createElement('button');btn.className='answer';btn.textContent=opt;
+      btn.onclick=()=>checkAnswer(opt,correctAns,btn);
+      div.appendChild(btn);
+    });
+    box.appendChild(div);
+  });
+}
+function checkAnswer(choice,correctAns,btn){
+  if(choice===correctAns){
+    btn.classList.add('correct');correctCount++;correctStreak++;
+    showStar();
+    if(correctStreak>0&&correctStreak%5===0){showEasterEgg(correctStreak);}
+    document.querySelectorAll('.answer').forEach(b=>b.disabled=true);
+    setTimeout(nextQuestion,900);
+  }else{
+    btn.classList.add('wrong');btn.disabled=true;wrongCount++;correctStreak=0;
+    if(!alwaysShowHands&&!defaultShowHands)showGridHint(currentA,false);
+  }
+  updateStats();
+}
+function showGridHint(num,instant=false){
+  const hint=document.getElementById('gridHint');
+  const box=document.getElementById('gridBox');
+  const lbl=document.getElementById('gridLabel');
+  box.innerHTML='';lbl.innerText='';
+  for(let i=1;i<=10;i++){
+    const cell=document.createElement('div');
+    cell.className='gridCell';
+    box.appendChild(cell);
+  }
+  hint.style.display='flex';
+  if(instant){
+    const cells=box.children;
+    for(let i=0;i<num;i++){cells[i].classList.add('filled');}
+    lbl.innerText=num;
+  }else{
+    const cells=box.children;
+    for(let i=0;i<num;i++){
+      setTimeout(()=>{cells[i].classList.add('filled');},i*180);
+    }
+    setTimeout(()=>{lbl.innerText=num;},num*180+200);
+  }
+}
+function hideGridHint(){
+  document.getElementById('gridHint').style.display='none';
+  document.getElementById('gridBox').innerHTML='';
+  document.getElementById('gridLabel').innerText='';
+}
+function showStar(){const s=document.createElement('div');s.className='star';s.innerText='⭐';document.body.appendChild(s);setTimeout(()=>s.remove(),900);}
+function showEasterEgg(streakCount){
+  const egg=document.createElement('div');
+  egg.innerHTML=`🎉 太棒了！你已经连续答对 ${streakCount} 题啦！`;
+  Object.assign(egg.style,{position:'fixed',top:'45%',left:'50%',transform:'translate(-50%,-50%)',background:'linear-gradient(45deg,#caffb3,#aaffc2)',padding:'20px 28px',borderRadius:'20px',fontSize:'1.4em',color:'#338a44',textAlign:'center',boxShadow:'0 0 15px rgba(200,255,200,0.9)',zIndex:'999',animation:'popin 0.4s ease-out'});
+  document.body.appendChild(egg);
+  for(let i=0;i<5;i++){const star=document.createElement('div');star.className='star';star.innerText='⭐';star.style.left=`${50+(Math.random()*30-15)}%`;star.style.top=`${45+(Math.random()*30-15)}%`;document.body.appendChild(star);setTimeout(()=>star.remove(),1000);}
+  setTimeout(()=>{egg.style.transition='opacity 0.5s';egg.style.opacity='0';setTimeout(()=>egg.remove(),600);},2000);
+}
+function updateStats(){document.getElementById('stats').innerText=`答对: ${correctCount} 题 | 错误: ${wrongCount} 题`;}
+function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+</script>
+</body>
+</html>
