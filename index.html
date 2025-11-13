@@ -1,227 +1,243 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>一年级减法练习（动态格子数量记忆）</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>一年级减法训练（可调闪现时间）</title>
 <style>
+:root{
+  --bg1:#f9fff4;
+  --bg2:#e7ffe2;
+  --accent:#44aa55;
+  --gridColor:#ffa94d;
+}
 body{
   font-family:"Comic Sans MS",sans-serif;
-  background: linear-gradient(180deg,#fafff2,#e6ffe6);
-  margin:0; padding:0;
-  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-  min-height:100vh; box-sizing:border-box;
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  margin:0;padding:0;
+  display:flex;flex-direction:column;align-items:center;
+  min-height:100vh;box-sizing:border-box;
 }
-h1{ margin-top:16px; color:#44aa55; text-shadow:2px 2px 0 #fff; }
-.panel{ width:100%; max-width:720px; padding:12px; box-sizing:border-box; text-align:center; }
+h1{margin-top:14px;color:var(--accent);text-shadow:1px 1px 0 #fff;}
+.panel{width:100%;max-width:760px;padding:12px;text-align:center;box-sizing:border-box;}
 button{
-  background:#b0f2b6; border:none; border-radius:12px; padding:10px 18px; margin:6px;
-  font-size:1.05em; cursor:pointer; box-shadow:2px 3px 0 #86c88d;
+  background:#b9f2b2;border:none;border-radius:12px;padding:10px 18px;margin:6px;
+  font-size:1.05em;cursor:pointer;box-shadow:2px 3px 0 #8cc78a;
 }
-button:hover{ transform:scale(1.03); }
-#modeSelect h3{ margin:8px 0 4px; color:#368a44; }
-#specialChoices{ display:flex; justify-content:center; gap:10px; margin:8px 0; flex-wrap:wrap; }
-.chk{ display:flex; flex-direction:column; align-items:center; background:#f2fff5; padding:6px 8px; border-radius:8px; }
-.chk input{ transform:scale(1.2); margin-bottom:6px; }
-hr{ width:80%; border:none; height:1px; background:#d1f0d3; margin:12px auto; }
+button:hover{transform:scale(1.03);}
+hr{width:86%;border:none;height:1px;background:#d1f0d3;margin:12px auto;}
+#modeSelect h3{margin:8px 0 6px;color:#2e8a3b;}
+#specialChoices{display:flex;justify-content:center;gap:10px;margin:8px 0;flex-wrap:wrap;}
+.chk{display:flex;flex-direction:column;align-items:center;background:#f2fff5;padding:6px 8px;border-radius:8px;}
+.chk input{transform:scale(1.2);margin-bottom:6px;}
+input[type="number"]{width:120px;padding:6px;font-size:1em;border-radius:6px;border:2px solid #a4dca2;text-align:center;}
 
-/* 游戏界面 */
-#game{ display:none; width:100%; max-width:720px; margin-top:8px; text-align:center; padding:8px; box-sizing:border-box; }
-#topBar{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
-#returnBtn{ background:#d8f9d8; box-shadow:2px 3px 0 #a2caa2; padding:8px 12px; border-radius:10px; }
-#question{ font-size:2em; color:#44aa55; margin:10px 0; }
-
-#answers { text-align:center; margin-top:10px; }
-.answerRow { display:flex; justify-content:center; flex-wrap:nowrap; margin-bottom:8px; }
-.answer {
-  background:#e1fbe2; border:none; border-radius:50%;
-  width:70px; height:70px; font-size:1.5em;
-  box-shadow:2px 3px 0 #a3dca4; cursor:pointer; transition:transform 0.15s;
+/* game */
+#game{display:none;width:100%;max-width:760px;text-align:center;margin-top:8px;}
+#topBar{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+#returnBtn{background:#e2ffd9;box-shadow:2px 3px 0 #a4d3a0;padding:8px 12px;border-radius:10px;}
+#question{font-size:2em;color:var(--accent);margin:12px 0;}
+/* grid */
+#gridHint{display:none;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin-top:10px;}
+.gridBox{
+  display:grid;
+  grid-template-columns:repeat(5,52px);
+  grid-template-rows:repeat(2,52px);
+  gap:8px;
 }
-.answer:hover { transform:scale(1.05); }
-.answer.correct { background:#a5ffb3; }
-.answer.wrong { background:#ffb3b3; animation:shake 0.28s; }
-
-@keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-8px)}100%{transform:translateX(0)}}
-
-/* 动态格子 */
-#gridHint{ display:none; margin-top:14px; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
-.gridBox{ display:grid; grid-template-columns:repeat(5,40px); grid-template-rows:repeat(2,40px); gap:6px; }
-.gridCell{ width:40px; height:40px; border-radius:6px; background:#f0f0f0; border:2px solid #cce0cc; transition:background 0.3s; }
-.gridCell.filled{ background:#7ed957; border-color:#58b944; animation:lightUp 0.25s ease-out forwards; }
-@keyframes lightUp{
-  0%{ background:#d3ffd3; transform:scale(0.7); }
-  80%{ background:#91f276; transform:scale(1.05); }
-  100%{ background:#7ed957; transform:scale(1); }
+.gridCell{
+  width:52px;height:52px;
+  border-radius:8px;
+  background:#fff4e1;
+  border:2px solid #ffd2a0;
+  transition:transform .2s,background .2s;
 }
-.labelNum{ font-size:1.3em; color:#338a44; margin-top:8px; }
-
-.star{ position:fixed; font-size:2em; color:gold; animation:starFly 1s ease-out forwards; }
-@keyframes starFly{0%{ transform:scale(0); opacity:1; top:50%; left:50% }100%{ transform:scale(1.8) translateY(-200px); opacity:0 }}
-
-@keyframes popin{
-  0%{transform:translate(-50%,-50%) scale(0.2);opacity:0;}
-  80%{transform:translate(-50%,-50%) scale(1.05);opacity:1;}
-  100%{transform:translate(-50%,-50%) scale(1);}
+.gridCell.filled{
+  background:var(--gridColor);
+  border-color:#ff8f1f;
+  transform:scale(1.05);
+  animation:flashPop .3s ease-out;
 }
+@keyframes flashPop{
+  0%{transform:scale(0.4);opacity:0.3;}
+  80%{transform:scale(1.08);opacity:1;}
+  100%{transform:scale(1);}
+}
+#gridNumberLabel{
+  font-size:2em;
+  color:#ff8800;
+  font-weight:bold;
+  text-shadow:1px 1px 0 #fff;
+}
+/* input area */
+#answerBox{margin-top:12px;}
+#answerInput{
+  width:100px;height:60px;font-size:2em;text-align:center;
+  border:3px solid #a2dca0;border-radius:12px;outline:none;
+  background:#fafffa;box-shadow:2px 2px 0 #c8ecc8;cursor:pointer;
+}
+#keypad{display:none;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:12px;}
+.keybtn{background:#c3f3b8;border:none;border-radius:10px;width:70px;height:70px;font-size:1.6em;box-shadow:2px 2px 0 #9ed79c;cursor:pointer;}
+.keybtn:hover{transform:scale(1.05);}
+.wide{width:150px;}
+#stats{margin-top:12px;color:#444;}
+#wrongList{margin-top:16px;color:#555;font-size:1em;}
+#wrongList span{display:inline-block;background:#fff9c4;color:#5c4a00;padding:6px 10px;border-radius:8px;margin:6px;cursor:pointer;}
+.star{position:fixed;font-size:2em;color:gold;animation:starFly 1s ease-out forwards;}
+@keyframes starFly{0%{transform:scale(0);opacity:1;top:50%;left:50%}100%{transform:scale(1.8) translateY(-200px);opacity:0}}
+.notifyBox{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);background:#fff6e0;padding:18px 26px;border-radius:14px;font-size:1.05em;color:#ff7a00;box-shadow:0 0 15px rgba(255,200,120,0.6);animation:popin .35s ease-out;}
+@keyframes popin{0%{transform:translate(-50%,-50%) scale(0.2);opacity:0;}80%{transform:translate(-50%,-50%) scale(1.05);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);}}
 </style>
 </head>
 <body>
-<h1>一年级减法练习</h1>
+<h1>一年级减法训练</h1>
 
+<!-- 模式选择 -->
 <div id="modeSelect" class="panel">
-  <h3>请选择练习模式</h3>
-  <div>
-    <button onclick="enterOrdinary()">普通模式（错了才显示格子）</button>
-    <button onclick="enterHandMode()">格子模式（每题都显示格子）</button>
-  </div>
+  <button onclick="enterOrdinary()">普通模式（错了才显示格子）</button>
+  <button onclick="enterMixedMode()">混合训练（1–9，无闪现）</button>
   <hr>
-  <h3>🧠 专项训练（可多选）</h3>
+  <h3>🧠 专项训练（智能闪现递减）</h3>
   <div id="specialChoices">
     <label class="chk"><input type="checkbox" value="5">5</label>
     <label class="chk"><input type="checkbox" value="6">6</label>
     <label class="chk"><input type="checkbox" value="7">7</label>
     <label class="chk"><input type="checkbox" value="8">8</label>
-    <label class="chk"><input type="checkbox" value="9">9</label>
+    <label class="chk"><input type="checkbox" value="9" checked>9</label>
   </div>
-  <div><button onclick="startSpecial()">开始专项训练</button></div>
+  <div style="margin:10px 0;">
+    初始闪现时间（毫秒）：
+    <input id="flashTimeInput" type="number" min="300" max="3000" value="1000">
+  </div>
+  <button onclick="enterSmartMode()">开始智能专项训练（闪现递减）</button>
 </div>
 
+<!-- 游戏界面 -->
 <div id="game" class="panel">
   <div id="topBar">
     <div style="visibility:hidden"></div>
     <div id="modeTag" style="font-size:0.95em;color:#666;"></div>
-    <button id="returnBtn" onclick="returnHome()">🏠 返回首页</button>
+    <button id="returnBtn" onclick="returnHome()">🏠 返回</button>
   </div>
-
-  <div id="question"></div>
-  <div id="answers"></div>
 
   <div id="gridHint">
     <div class="gridBox" id="gridBox"></div>
-    <div class="labelNum" id="gridLabel"></div>
+    <div id="gridNumberLabel"></div>
+  </div>
+
+  <div id="question"></div>
+
+  <div id="answerBox">
+    <input id="answerInput" readonly placeholder="?" onclick="toggleKeypad()">
+  </div>
+
+  <div id="keypad">
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:8px;">
+      <button class="keybtn" onclick="pressKey(0)">0</button>
+      <button class="keybtn" onclick="pressKey(1)">1</button>
+      <button class="keybtn" onclick="pressKey(2)">2</button>
+      <button class="keybtn" onclick="pressKey(3)">3</button>
+      <button class="keybtn" onclick="pressKey(4)">4</button>
+      <button class="keybtn" onclick="pressKey(5)">5</button>
+    </div>
+    <div style="display:flex;justify-content:center;gap:8px;">
+      <button class="keybtn" onclick="pressKey(6)">6</button>
+      <button class="keybtn" onclick="pressKey(7)">7</button>
+      <button class="keybtn" onclick="pressKey(8)">8</button>
+      <button class="keybtn" onclick="pressKey(9)">9</button>
+      <button class="keybtn" onclick="pressKey(10)">10</button>
+    </div>
+    <div style="display:flex;justify-content:center;gap:8px;margin-top:10px;">
+      <button class="keybtn wide" onclick="submitAnswer()">确定 ✅</button>
+      <button class="keybtn wide" onclick="clearInput()">清除 ↺</button>
+    </div>
   </div>
 
   <div id="stats"></div>
+  <div id="wrongList"></div>
 </div>
 
 <script>
-let correctCount=0,wrongCount=0,questionCount=0;
-let currentA=0,currentB=0;
-let recentQuestions=[];
-let defaultShowHands=false,alwaysShowHands=false,specialSet=null;
-let correctStreak=0;
+let mode='idle',specialSet=[],currentA=0,currentB=0;
+let flashTime=0,correctCount=0,wrongCount=0,correctStreak=0,questionAnsweredWrong=false;
+let wrongQuestions=[];
 
-function enterOrdinary(){specialSet=null;alwaysShowHands=false;defaultShowHands=false;startGame('普通模式 (错了才显示格子)');}
-function enterHandMode(){specialSet=null;alwaysShowHands=true;defaultShowHands=true;startGame('格子模式 (每题显示格子)');}
-function startSpecial(){
-  const boxes=Array.from(document.querySelectorAll('#specialChoices input[type=checkbox]'));
-  const sel=boxes.filter(b=>b.checked).map(b=>parseInt(b.value));
-  if(sel.length===0){alert('请至少选择一个专项训练的数字（5-9）后再开始。');return;}
+/* --- Entry --- */
+function enterOrdinary(){mode='ordinary';flashTime=0;startGame('普通模式（错了才显示格子）');}
+function enterMixedMode(){mode='mixed';flashTime=0;startGame('混合训练（1–9，无闪现）');}
+function enterSmartMode(){
+  const sel=Array.from(document.querySelectorAll('#specialChoices input[type=checkbox]')).filter(b=>b.checked).map(b=>+b.value);
+  if(sel.length===0){alert('请至少选择一个数字');return;}
   specialSet=sel;
-  const wantShow=confirm('进入专项训练：\\n已选择：'+sel.join(',')+'\\n\\n是否默认显示格子？\\n（确定 = 默认显示；取消 = 只在答错时显示）');
-  defaultShowHands=!!wantShow;alwaysShowHands=!!wantShow;
-  startGame('专项训练（'+sel.join(',')+'）');
+  const base=parseInt(document.getElementById('flashTimeInput').value)||1000;
+  flashTime=base;
+  correctStreak=0;
+  notify('进入智能专项训练：'+sel.join(',')+'（初始闪现 '+base+'ms）');
+  mode='smart';
+  startGame('智能专项训练（'+sel.join(',')+'）');
 }
-function startGame(modeTagText){
-  correctCount=wrongCount=questionCount=correctStreak=0;recentQuestions=[];
-  document.getElementById('modeSelect').style.display='none';
-  document.getElementById('game').style.display='block';
-  document.getElementById('modeTag').innerText=modeTagText;
-  nextQuestion();
-}
-function returnHome(){
-  specialSet=null;defaultShowHands=false;alwaysShowHands=false;
-  document.getElementById('game').style.display='none';
-  document.getElementById('modeSelect').style.display='block';
-  document.querySelectorAll('#specialChoices input[type=checkbox]').forEach(cb=>cb.checked=false);
-  document.getElementById('stats').innerText='';
-}
+
+/* --- Game core (same as v6) --- */
+function startGame(tag){correctCount=wrongCount=correctStreak=0;wrongQuestions=[];document.getElementById('modeSelect').style.display='none';document.getElementById('game').style.display='block';document.getElementById('modeTag').innerText=tag;nextQuestion();}
+function returnHome(){document.getElementById('game').style.display='none';document.getElementById('modeSelect').style.display='block';}
+
 function nextQuestion(){
-  questionCount++;hideGridHint();
-  let a,b;let tries=0;
-  do{
-    tries++;
-    if(Array.isArray(specialSet)&&specialSet.length>0){
-      a=specialSet[Math.floor(Math.random()*specialSet.length)];
-      b=randInt(1,Math.max(1,a-1));
-    }else{
-      const difficulty=Math.min(1,questionCount/20);
-      if(Math.random()<0.4+0.6*difficulty)a=randInt(5,9);else a=randInt(2,5);
-      if(Math.random()<0.05)b=0;else{const minDiff=Math.floor((1-difficulty)*3);const maxB=a-Math.max(1,minDiff);b=randInt(0,Math.max(0,maxB));if(b>=a)b=a-1;}
-    }
-  }while((a>9||b>9||b<0||a<b||recentQuestions.some(q=>q.a===a&&q.b===b))&&tries<12);
-  recentQuestions.push({a,b});if(recentQuestions.length>8)recentQuestions.shift();
-  currentA=a;currentB=b;
-  document.getElementById('question').innerText=`${a} - ${b} = ?`;
-  renderAnswers(a-b);
-  if(alwaysShowHands||defaultShowHands)showGridHint(a,true);
-}
-function renderAnswers(correctAns){
-  const box=document.getElementById('answers');box.innerHTML='';
-  const rows=[[0,1,2,3,4,5],[6,7,8,9,10]];
-  rows.forEach(row=>{
-    const div=document.createElement('div');div.className='answerRow';
-    row.forEach(opt=>{
-      const btn=document.createElement('button');btn.className='answer';btn.textContent=opt;
-      btn.onclick=()=>checkAnswer(opt,correctAns,btn);
-      div.appendChild(btn);
-    });
-    box.appendChild(div);
-  });
-}
-function checkAnswer(choice,correctAns,btn){
-  if(choice===correctAns){
-    btn.classList.add('correct');correctCount++;correctStreak++;
-    showStar();
-    if(correctStreak>0&&correctStreak%5===0){showEasterEgg(correctStreak);}
-    document.querySelectorAll('.answer').forEach(b=>b.disabled=true);
-    setTimeout(nextQuestion,900);
-  }else{
-    btn.classList.add('wrong');btn.disabled=true;wrongCount++;correctStreak=0;
-    if(!alwaysShowHands&&!defaultShowHands)showGridHint(currentA,false);
+  hideGridHint();clearInput();hideKeypad();questionAnsweredWrong=false;
+  if(mode==='ordinary'){currentA=rand(2,9);currentB=rand(0,currentA-1);}
+  else if(mode==='mixed'){currentA=rand(1,9);currentB=rand(0,currentA-1);}
+  else if(mode==='smart'){currentA=specialSet[Math.floor(Math.random()*specialSet.length)];currentB=rand(1,Math.max(1,currentA-1));
+    if(flashTime>0){showGrid(currentA,true);setTimeout(hideGridHint,flashTime);}
   }
+  document.getElementById('question').innerText=`${currentA} - ${currentB} = ?`;
   updateStats();
 }
-function showGridHint(num,instant=false){
-  const hint=document.getElementById('gridHint');
-  const box=document.getElementById('gridBox');
-  const lbl=document.getElementById('gridLabel');
+
+/* grid display */
+function showGrid(num,showLabel=false){
+  const hint=document.getElementById('gridHint'),box=document.getElementById('gridBox'),lbl=document.getElementById('gridNumberLabel');
   box.innerHTML='';lbl.innerText='';
-  for(let i=1;i<=10;i++){
-    const cell=document.createElement('div');
-    cell.className='gridCell';
-    box.appendChild(cell);
-  }
+  for(let i=0;i<10;i++){const d=document.createElement('div');d.className='gridCell';if(i<num)d.classList.add('filled');box.appendChild(d);}
+  if(showLabel)lbl.innerText=num;
   hint.style.display='flex';
-  if(instant){
-    const cells=box.children;
-    for(let i=0;i<num;i++){cells[i].classList.add('filled');}
-    lbl.innerText=num;
-  }else{
-    const cells=box.children;
-    for(let i=0;i<num;i++){
-      setTimeout(()=>{cells[i].classList.add('filled');},i*180);
-    }
-    setTimeout(()=>{lbl.innerText=num;},num*180+200);
-  }
 }
-function hideGridHint(){
-  document.getElementById('gridHint').style.display='none';
-  document.getElementById('gridBox').innerHTML='';
-  document.getElementById('gridLabel').innerText='';
+function hideGridHint(){document.getElementById('gridHint').style.display='none';}
+
+/* input */
+function pressKey(n){document.getElementById('answerInput').value=String(n);}
+function clearInput(){document.getElementById('answerInput').value='';}
+function toggleKeypad(){const k=document.getElementById('keypad');k.style.display=k.style.display==='flex'?'none':'flex';}
+function hideKeypad(){document.getElementById('keypad').style.display='none';}
+
+function submitAnswer(){
+  const val=document.getElementById('answerInput').value.trim();if(!val)return alert('请先输入答案');
+  const ans=parseInt(val,10),right=currentA-currentB;
+  if(ans===right){correctCount++;correctStreak++;showStar();if(mode==='smart')adjustFlashOnCorrect();setTimeout(()=>nextQuestion(),700);}
+  else{if(!questionAnsweredWrong){wrongCount++;questionAnsweredWrong=true;wrongQuestions.unshift(`${currentA}-${currentB}`);if(wrongQuestions.length>5)wrongQuestions.pop();updateWrongList();}
+    correctStreak=0;if(mode==='smart')adjustFlashOnWrong();showGrid(currentA,true);}
+  updateStats();
 }
+
+/* smart flash logic */
+function adjustFlashOnCorrect(){
+  const base=parseInt(document.getElementById('flashTimeInput').value)||1000;
+  if(correctStreak===5&&flashTime>base*0.6){flashTime=base*0.6;notify('👏 闪现缩短为 '+Math.round(flashTime)+'ms');}
+  else if(correctStreak===10&&flashTime>base*0.3){flashTime=base*0.3;notify('🌟 闪现缩短为 '+Math.round(flashTime)+'ms');}
+  else if(correctStreak===15&&flashTime>0){flashTime=0;notify('🎉 进入无闪现阶段！');}
+}
+function adjustFlashOnWrong(){
+  const base=parseInt(document.getElementById('flashTimeInput').value)||1000;
+  if(flashTime===0){flashTime=base*0.3;notify('⚠️ 回退至 '+Math.round(flashTime)+'ms');}
+  else if(flashTime<=base*0.3){flashTime=base*0.6;notify('⚠️ 回退至 '+Math.round(flashTime)+'ms');}
+  else if(flashTime<=base*0.6){flashTime=base;notify('⚠️ 回退至 '+base+'ms');}
+}
+
+/* misc */
+function updateStats(){document.getElementById('stats').innerText=`答对:${correctCount} | 错误:${wrongCount} | 连对:${correctStreak}`;}
+function updateWrongList(){const b=document.getElementById('wrongList');if(wrongQuestions.length===0){b.innerHTML='';return;}b.innerHTML='错题回顾：'+wrongQuestions.map((q,i)=>`<span onclick="retry(${i})">${q}</span>`).join('');}
+function retry(i){const q=wrongQuestions[i];if(!q)return;const[a,b]=q.split('-').map(x=>+x);currentA=a;currentB=b;document.getElementById('question').innerText=`${a} - ${b} = ? (复习题)`;showGrid(a,true);questionAnsweredWrong=false;clearInput();}
+function notify(msg){const n=document.createElement('div');n.className='notifyBox';n.innerText=msg;document.body.appendChild(n);setTimeout(()=>{n.style.opacity='0';setTimeout(()=>n.remove(),500);},1800);}
 function showStar(){const s=document.createElement('div');s.className='star';s.innerText='⭐';document.body.appendChild(s);setTimeout(()=>s.remove(),900);}
-function showEasterEgg(streakCount){
-  const egg=document.createElement('div');
-  egg.innerHTML=`🎉 太棒了！你已经连续答对 ${streakCount} 题啦！`;
-  Object.assign(egg.style,{position:'fixed',top:'45%',left:'50%',transform:'translate(-50%,-50%)',background:'linear-gradient(45deg,#caffb3,#aaffc2)',padding:'20px 28px',borderRadius:'20px',fontSize:'1.4em',color:'#338a44',textAlign:'center',boxShadow:'0 0 15px rgba(200,255,200,0.9)',zIndex:'999',animation:'popin 0.4s ease-out'});
-  document.body.appendChild(egg);
-  for(let i=0;i<5;i++){const star=document.createElement('div');star.className='star';star.innerText='⭐';star.style.left=`${50+(Math.random()*30-15)}%`;star.style.top=`${45+(Math.random()*30-15)}%`;document.body.appendChild(star);setTimeout(()=>star.remove(),1000);}
-  setTimeout(()=>{egg.style.transition='opacity 0.5s';egg.style.opacity='0';setTimeout(()=>egg.remove(),600);},2000);
-}
-function updateStats(){document.getElementById('stats').innerText=`答对: ${correctCount} 题 | 错误: ${wrongCount} 题`;}
-function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 </script>
 </body>
 </html>
