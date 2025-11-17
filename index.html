@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>一年级减法训练（V9 - 数形联结）</title>
+<title>一年级减法训练（V9.1 修复键盘隐藏）</title>
 <style>
 :root{
   --bg1:#f9fff4; --bg2:#e7ffe2; --accent:#2e8a3b; --gridAccent:#ffa94d;
@@ -98,7 +98,7 @@ input[type="number"]{width:120px;padding:6px;font-size:1em;border-radius:6px;bor
 </head>
 <body>
 
-<h1>一年级减法训练（V9）</h1>
+<h1>一年级减法训练（V9.1）</h1>
 
 <!-- 首页 -->
 <div id="modeSelect" class="panel">
@@ -249,6 +249,7 @@ function startGame(tag){
 }
 function returnHome(){
   stopAllFlash();
+  hideKeypad(); // ensure keypad hidden when returning
   document.getElementById('game').style.display = 'none';
   document.getElementById('modeSelect').style.display = 'block';
 }
@@ -261,6 +262,7 @@ function nextQuestion(){
   stopAllFlash();
   hideGrid();
   clearInput();
+  hideKeypad(); // <-- ensure keypad hidden when new question appears
   questionAnsweredWrong = false;
 
   if(mode === 'ordinary'){
@@ -319,6 +321,7 @@ function hideGrid(){
    ------------------- */
 function showGridWithRemovedFlash(a, b){
   stopAllFlash(); // ensure previous cleared
+  hideKeypad(); // ensure keypad hidden when showing error grid
   const box = document.getElementById('gridBox');
   box.innerHTML = '';
   const cells = [];
@@ -371,7 +374,7 @@ function stopAllFlash(){
 function pressKey(n){ document.getElementById('answerInput').value = String(n); }
 function clearInput(){ document.getElementById('answerInput').value = ''; }
 function toggleKeypad(){ const pad = document.getElementById('keypad'); pad.style.display = pad.style.display === 'flex' ? 'none' : 'flex'; }
-function hideKeypad(){ document.getElementById('keypad').style.display = 'none'; }
+function hideKeypad(){ const pad = document.getElementById('keypad'); pad.style.display = 'none'; }
 
 function submitAnswer(){
   const val = document.getElementById('answerInput').value.trim();
@@ -383,6 +386,7 @@ function submitAnswer(){
     correctStreak++;
     showFeedback('答对啦！', true);
     showStar();
+    hideKeypad(); // hide keypad immediately on correct
     if(mode === 'smart') adjustFlashOnCorrect();
     setTimeout(()=>{ nextQuestion(); }, 700);
   } else {
@@ -395,6 +399,7 @@ function submitAnswer(){
     }
     correctStreak = 0;
     if(mode === 'smart') adjustFlashOnWrong();
+    hideKeypad(); // hide keypad when showing error grid
     showGridWithRemovedFlash(currentA, currentB);
     playVoice(currentB, currentA - currentB);
     showFeedback('再想想~', false);
@@ -438,6 +443,7 @@ function retryWrong(i){
   const parts = q.split('-').map(x=>parseInt(x,10));
   currentA = parts[0]; currentB = parts[1];
   stopAllFlash(); clearInput();
+  hideKeypad(); // ensure keypad hidden when entering retry
   document.getElementById('question').innerText = `${currentA} - ${currentB} = ? (复习题)`;
   showGrid(currentA, true);
   questionAnsweredWrong = false;
@@ -480,7 +486,7 @@ function playVoice(removed, remain){
 function pressKey(n){ document.getElementById('answerInput').value = String(n); }
 function clearInput(){ document.getElementById('answerInput').value = ''; }
 function toggleKeypad(){ const pad = document.getElementById('keypad'); pad.style.display = pad.style.display === 'flex' ? 'none' : 'flex'; }
-function hideKeypad(){ document.getElementById('keypad').style.display = 'none'; }
+function hideKeypad(){ const pad = document.getElementById('keypad'); pad.style.display = 'none'; }
 document.addEventListener('keydown', (e) => { if(e.key === 'Enter') submitAnswer(); });
 
 /* -------------------
