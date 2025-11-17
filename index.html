@@ -1,44 +1,33 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>一年级减法训练（可调闪现时间）</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>减法训练（错误闪烁 + 语音提示）</title>
+
 <style>
-:root{
-  --bg1:#f9fff4;
-  --bg2:#e7ffe2;
-  --accent:#44aa55;
-  --gridColor:#ffa94d;
-}
 body{
   font-family:"Comic Sans MS",sans-serif;
-  background:linear-gradient(180deg,var(--bg1),var(--bg2));
-  margin:0;padding:0;
+  background:#f7fff3;
   display:flex;flex-direction:column;align-items:center;
-  min-height:100vh;box-sizing:border-box;
+  margin:0;padding:0;
 }
-h1{margin-top:14px;color:var(--accent);text-shadow:1px 1px 0 #fff;}
-.panel{width:100%;max-width:760px;padding:12px;text-align:center;box-sizing:border-box;}
+h1{margin:18px 0;color:#44aa55;}
+
+.panel{width:100%;max-width:760px;text-align:center;}
+
 button{
-  background:#b9f2b2;border:none;border-radius:12px;padding:10px 18px;margin:6px;
-  font-size:1.05em;cursor:pointer;box-shadow:2px 3px 0 #8cc78a;
+  background:#b8f1b2;border:none;border-radius:12px;
+  padding:10px 18px;margin:6px;font-size:1.1em;
+  box-shadow:2px 3px 0 #8ec78a;cursor:pointer;
 }
 button:hover{transform:scale(1.03);}
-hr{width:86%;border:none;height:1px;background:#d1f0d3;margin:12px auto;}
-#modeSelect h3{margin:8px 0 6px;color:#2e8a3b;}
-#specialChoices{display:flex;justify-content:center;gap:10px;margin:8px 0;flex-wrap:wrap;}
-.chk{display:flex;flex-direction:column;align-items:center;background:#f2fff5;padding:6px 8px;border-radius:8px;}
-.chk input{transform:scale(1.2);margin-bottom:6px;}
-input[type="number"]{width:120px;padding:6px;font-size:1em;border-radius:6px;border:2px solid #a4dca2;text-align:center;}
 
-/* game */
-#game{display:none;width:100%;max-width:760px;text-align:center;margin-top:8px;}
-#topBar{display:flex;justify-content:space-between;align-items:center;gap:10px;}
-#returnBtn{background:#e2ffd9;box-shadow:2px 3px 0 #a4d3a0;padding:8px 12px;border-radius:10px;}
-#question{font-size:2em;color:var(--accent);margin:12px 0;}
 /* grid */
-#gridHint{display:none;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin-top:10px;}
+#gridHint{
+  margin-top:12px;display:none;flex-direction:column;
+  align-items:center;gap:6px;
+}
 .gridBox{
   display:grid;
   grid-template-columns:repeat(5,52px);
@@ -46,198 +35,214 @@ input[type="number"]{width:120px;padding:6px;font-size:1em;border-radius:6px;bor
   gap:8px;
 }
 .gridCell{
-  width:52px;height:52px;
-  border-radius:8px;
-  background:#fff4e1;
-  border:2px solid #ffd2a0;
-  transition:transform .2s,background .2s;
+  width:52px;height:52px;border-radius:8px;
+  background:#fff4e0;border:2px solid #ffd2a0;
+  transition:opacity .25s,transform .25s;
 }
 .gridCell.filled{
-  background:var(--gridColor);
-  border-color:#ff8f1f;
-  transform:scale(1.05);
-  animation:flashPop .3s ease-out;
+  background:#ffa94d;border-color:#ff8f1f;
+  transform:scale(1.06);
 }
-@keyframes flashPop{
-  0%{transform:scale(0.4);opacity:0.3;}
-  80%{transform:scale(1.08);opacity:1;}
-  100%{transform:scale(1);}
+.flash{
+  animation:flashAnim .6s infinite;
 }
-#gridNumberLabel{
-  font-size:2em;
-  color:#ff8800;
-  font-weight:bold;
-  text-shadow:1px 1px 0 #fff;
+@keyframes flashAnim {
+  0%{opacity:1;}
+  50%{opacity:0.15;}
+  100%{opacity:1;}
 }
-/* input area */
-#answerBox{margin-top:12px;}
+
+#gridNumber{
+  font-size:2em;font-weight:bold;color:#ff8800;
+}
+
+#question{
+  margin-top:20px;font-size:2.2em;color:#3b8c49;
+}
+
 #answerInput{
   width:100px;height:60px;font-size:2em;text-align:center;
-  border:3px solid #a2dca0;border-radius:12px;outline:none;
-  background:#fafffa;box-shadow:2px 2px 0 #c8ecc8;cursor:pointer;
+  border:3px solid #8cd88f;border-radius:12px;
+  background:#fafff9;margin-top:12px;
 }
-#keypad{display:none;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:12px;}
-.keybtn{background:#c3f3b8;border:none;border-radius:10px;width:70px;height:70px;font-size:1.6em;box-shadow:2px 2px 0 #9ed79c;cursor:pointer;}
-.keybtn:hover{transform:scale(1.05);}
+
+#keypad{display:none;margin-top:12px;flex-wrap:wrap;justify-content:center;gap:8px;}
+.keybtn{
+  width:70px;height:70px;font-size:1.6em;
+  border:none;border-radius:10px;background:#d8f8d4;
+  box-shadow:2px 2px 0 #9ccc9b;cursor:pointer;
+}
+
 .wide{width:150px;}
-#stats{margin-top:12px;color:#444;}
-#wrongList{margin-top:16px;color:#555;font-size:1em;}
-#wrongList span{display:inline-block;background:#fff9c4;color:#5c4a00;padding:6px 10px;border-radius:8px;margin:6px;cursor:pointer;}
-.star{position:fixed;font-size:2em;color:gold;animation:starFly 1s ease-out forwards;}
-@keyframes starFly{0%{transform:scale(0);opacity:1;top:50%;left:50%}100%{transform:scale(1.8) translateY(-200px);opacity:0}}
-.notifyBox{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);background:#fff6e0;padding:18px 26px;border-radius:14px;font-size:1.05em;color:#ff7a00;box-shadow:0 0 15px rgba(255,200,120,0.6);animation:popin .35s ease-out;}
-@keyframes popin{0%{transform:translate(-50%,-50%) scale(0.2);opacity:0;}80%{transform:translate(-50%,-50%) scale(1.05);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);}}
+
+#stats{margin-top:12px;color:#555;font-size:1.1em;}
+
 </style>
 </head>
 <body>
+
 <h1>一年级减法训练</h1>
 
-<!-- 模式选择 -->
 <div id="modeSelect" class="panel">
-  <button onclick="enterOrdinary()">普通模式（错了才显示格子）</button>
-  <button onclick="enterMixedMode()">混合训练（1–9，无闪现）</button>
-  <hr>
-  <h3>🧠 专项训练（智能闪现递减）</h3>
-  <div id="specialChoices">
-    <label class="chk"><input type="checkbox" value="5">5</label>
-    <label class="chk"><input type="checkbox" value="6">6</label>
-    <label class="chk"><input type="checkbox" value="7">7</label>
-    <label class="chk"><input type="checkbox" value="8">8</label>
-    <label class="chk"><input type="checkbox" value="9" checked>9</label>
-  </div>
-  <div style="margin:10px 0;">
-    初始闪现时间（毫秒）：
-    <input id="flashTimeInput" type="number" min="300" max="3000" value="1000">
-  </div>
-  <button onclick="enterSmartMode()">开始智能专项训练（闪现递减）</button>
+  <button onclick="startNormal()">普通模式</button>
 </div>
 
-<!-- 游戏界面 -->
-<div id="game" class="panel">
-  <div id="topBar">
-    <div style="visibility:hidden"></div>
-    <div id="modeTag" style="font-size:0.95em;color:#666;"></div>
-    <button id="returnBtn" onclick="returnHome()">🏠 返回</button>
-  </div>
+<div id="game" class="panel" style="display:none;">
+  
+  <button onclick="returnHome()" style="margin-top:10px;">🏠 返回首页</button>
 
   <div id="gridHint">
     <div class="gridBox" id="gridBox"></div>
-    <div id="gridNumberLabel"></div>
+    <div id="gridNumber"></div>
   </div>
 
   <div id="question"></div>
 
-  <div id="answerBox">
-    <input id="answerInput" readonly placeholder="?" onclick="toggleKeypad()">
-  </div>
+  <input id="answerInput" readonly placeholder="?" onclick="toggleKeypad()"/>
 
   <div id="keypad">
-    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:8px;">
-      <button class="keybtn" onclick="pressKey(0)">0</button>
-      <button class="keybtn" onclick="pressKey(1)">1</button>
-      <button class="keybtn" onclick="pressKey(2)">2</button>
-      <button class="keybtn" onclick="pressKey(3)">3</button>
-      <button class="keybtn" onclick="pressKey(4)">4</button>
-      <button class="keybtn" onclick="pressKey(5)">5</button>
+    <div style="display:flex;gap:8px;">
+      <button class="keybtn" onclick="press(0)">0</button>
+      <button class="keybtn" onclick="press(1)">1</button>
+      <button class="keybtn" onclick="press(2)">2</button>
+      <button class="keybtn" onclick="press(3)">3</button>
+      <button class="keybtn" onclick="press(4)">4</button>
+      <button class="keybtn" onclick="press(5)">5</button>
     </div>
-    <div style="display:flex;justify-content:center;gap:8px;">
-      <button class="keybtn" onclick="pressKey(6)">6</button>
-      <button class="keybtn" onclick="pressKey(7)">7</button>
-      <button class="keybtn" onclick="pressKey(8)">8</button>
-      <button class="keybtn" onclick="pressKey(9)">9</button>
-      <button class="keybtn" onclick="pressKey(10)">10</button>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="keybtn" onclick="press(6)">6</button>
+      <button class="keybtn" onclick="press(7)">7</button>
+      <button class="keybtn" onclick="press(8)">8</button>
+      <button class="keybtn" onclick="press(9)">9</button>
+      <button class="keybtn" onclick="press(10)">10</button>
     </div>
-    <div style="display:flex;justify-content:center;gap:8px;margin-top:10px;">
-      <button class="keybtn wide" onclick="submitAnswer()">确定 ✅</button>
-      <button class="keybtn wide" onclick="clearInput()">清除 ↺</button>
+    <div style="margin-top:12px;display:flex;gap:10px;justify-content:center;">
+      <button class="keybtn wide" onclick="submitAnswer()">确定</button>
+      <button class="keybtn wide" onclick="clearInput()">清除</button>
     </div>
   </div>
 
   <div id="stats"></div>
-  <div id="wrongList"></div>
 </div>
 
 <script>
-let mode='idle',specialSet=[],currentA=0,currentB=0;
-let flashTime=0,correctCount=0,wrongCount=0,correctStreak=0,questionAnsweredWrong=false;
-let wrongQuestions=[];
+let currentA=0,currentB=0;
+let wrongShown=false;
+let flashCells=[];
+let flashTimer=null;
 
-/* --- Entry --- */
-function enterOrdinary(){mode='ordinary';flashTime=0;startGame('普通模式（错了才显示格子）');}
-function enterMixedMode(){mode='mixed';flashTime=0;startGame('混合训练（1–9，无闪现）');}
-function enterSmartMode(){
-  const sel=Array.from(document.querySelectorAll('#specialChoices input[type=checkbox]')).filter(b=>b.checked).map(b=>+b.value);
-  if(sel.length===0){alert('请至少选择一个数字');return;}
-  specialSet=sel;
-  const base=parseInt(document.getElementById('flashTimeInput').value)||1000;
-  flashTime=base;
-  correctStreak=0;
-  notify('进入智能专项训练：'+sel.join(',')+'（初始闪现 '+base+'ms）');
-  mode='smart';
-  startGame('智能专项训练（'+sel.join(',')+'）');
+/* ---------- 基础 ---------- */
+function startNormal(){
+  document.getElementById('modeSelect').style.display='none';
+  document.getElementById('game').style.display='block';
+  nextQuestion();
 }
 
-/* --- Game core (same as v6) --- */
-function startGame(tag){correctCount=wrongCount=correctStreak=0;wrongQuestions=[];document.getElementById('modeSelect').style.display='none';document.getElementById('game').style.display='block';document.getElementById('modeTag').innerText=tag;nextQuestion();}
-function returnHome(){document.getElementById('game').style.display='none';document.getElementById('modeSelect').style.display='block';}
+function returnHome(){
+  stopFlash();
+  document.getElementById('game').style.display='none';
+  document.getElementById('modeSelect').style.display='block';
+}
 
+/* ---------- 出题 ---------- */
 function nextQuestion(){
-  hideGridHint();clearInput();hideKeypad();questionAnsweredWrong=false;
-  if(mode==='ordinary'){currentA=rand(2,9);currentB=rand(0,currentA-1);}
-  else if(mode==='mixed'){currentA=rand(1,9);currentB=rand(0,currentA-1);}
-  else if(mode==='smart'){currentA=specialSet[Math.floor(Math.random()*specialSet.length)];currentB=rand(1,Math.max(1,currentA-1));
-    if(flashTime>0){showGrid(currentA,true);setTimeout(hideGridHint,flashTime);}
-  }
-  document.getElementById('question').innerText=`${currentA} - ${currentB} = ?`;
+  stopFlash();
+  hideGridHint();
+  clearInput();
+  wrongShown=false;
+
+  currentA = rand(2,9);
+  currentB = rand(0,currentA-1);
+
+  document.getElementById("question").innerText = `${currentA} - ${currentB} = ?`;
   updateStats();
 }
 
-/* grid display */
-function showGrid(num,showLabel=false){
-  const hint=document.getElementById('gridHint'),box=document.getElementById('gridBox'),lbl=document.getElementById('gridNumberLabel');
-  box.innerHTML='';lbl.innerText='';
-  for(let i=0;i<10;i++){const d=document.createElement('div');d.className='gridCell';if(i<num)d.classList.add('filled');box.appendChild(d);}
-  if(showLabel)lbl.innerText=num;
-  hint.style.display='flex';
+/* ---------- 数字键盘 ---------- */
+function press(n){
+  document.getElementById("answerInput").value = n;
 }
-function hideGridHint(){document.getElementById('gridHint').style.display='none';}
+function clearInput(){
+  document.getElementById("answerInput").value = "";
+}
+function toggleKeypad(){
+  const k=document.getElementById("keypad");
+  k.style.display = (k.style.display==="flex") ? "none" : "flex";
+}
 
-/* input */
-function pressKey(n){document.getElementById('answerInput').value=String(n);}
-function clearInput(){document.getElementById('answerInput').value='';}
-function toggleKeypad(){const k=document.getElementById('keypad');k.style.display=k.style.display==='flex'?'none':'flex';}
-function hideKeypad(){document.getElementById('keypad').style.display='none';}
-
+/* ---------- 提交答案 ---------- */
 function submitAnswer(){
-  const val=document.getElementById('answerInput').value.trim();if(!val)return alert('请先输入答案');
-  const ans=parseInt(val,10),right=currentA-currentB;
-  if(ans===right){correctCount++;correctStreak++;showStar();if(mode==='smart')adjustFlashOnCorrect();setTimeout(()=>nextQuestion(),700);}
-  else{if(!questionAnsweredWrong){wrongCount++;questionAnsweredWrong=true;wrongQuestions.unshift(`${currentA}-${currentB}`);if(wrongQuestions.length>5)wrongQuestions.pop();updateWrongList();}
-    correctStreak=0;if(mode==='smart')adjustFlashOnWrong();showGrid(currentA,true);}
+  const v=document.getElementById("answerInput").value;
+  if(v==="") return alert("请输入答案！");
+  const ans=parseInt(v);
+  const right=currentA-currentB;
+
+  if(ans===right){
+    nextQuestion();
+  } else {
+    if(!wrongShown){
+      wrongShown=true;
+      showGridWithFlash(currentA, currentB);
+      playVoice(currentB, right);
+    }
+  }
   updateStats();
 }
 
-/* smart flash logic */
-function adjustFlashOnCorrect(){
-  const base=parseInt(document.getElementById('flashTimeInput').value)||1000;
-  if(correctStreak===5&&flashTime>base*0.6){flashTime=base*0.6;notify('👏 闪现缩短为 '+Math.round(flashTime)+'ms');}
-  else if(correctStreak===10&&flashTime>base*0.3){flashTime=base*0.3;notify('🌟 闪现缩短为 '+Math.round(flashTime)+'ms');}
-  else if(correctStreak===15&&flashTime>0){flashTime=0;notify('🎉 进入无闪现阶段！');}
-}
-function adjustFlashOnWrong(){
-  const base=parseInt(document.getElementById('flashTimeInput').value)||1000;
-  if(flashTime===0){flashTime=base*0.3;notify('⚠️ 回退至 '+Math.round(flashTime)+'ms');}
-  else if(flashTime<=base*0.3){flashTime=base*0.6;notify('⚠️ 回退至 '+Math.round(flashTime)+'ms');}
-  else if(flashTime<=base*0.6){flashTime=base;notify('⚠️ 回退至 '+base+'ms');}
+/* ---------- 显示格子 + B 个闪烁 ---------- */
+function showGridWithFlash(a,b){
+  const hint=document.getElementById('gridHint');
+  const box=document.getElementById('gridBox');
+  const lbl=document.getElementById('gridNumber');
+
+  box.innerHTML='';
+  flashCells=[];
+
+  for(let i=0;i<10;i++){
+    const d=document.createElement('div');
+    d.className='gridCell';
+    if(i<a) d.classList.add('filled');
+    box.appendChild(d);
+    flashCells.push(d);
+  }
+
+  lbl.innerText=a;
+  hint.style.display='flex';
+
+  /* 最后 b 个格子闪烁 */
+  let startIndex = a - b;
+  for(let i=startIndex;i<a;i++){
+    flashCells[i].classList.add('flash');
+  }
 }
 
-/* misc */
-function updateStats(){document.getElementById('stats').innerText=`答对:${correctCount} | 错误:${wrongCount} | 连对:${correctStreak}`;}
-function updateWrongList(){const b=document.getElementById('wrongList');if(wrongQuestions.length===0){b.innerHTML='';return;}b.innerHTML='错题回顾：'+wrongQuestions.map((q,i)=>`<span onclick="retry(${i})">${q}</span>`).join('');}
-function retry(i){const q=wrongQuestions[i];if(!q)return;const[a,b]=q.split('-').map(x=>+x);currentA=a;currentB=b;document.getElementById('question').innerText=`${a} - ${b} = ? (复习题)`;showGrid(a,true);questionAnsweredWrong=false;clearInput();}
-function notify(msg){const n=document.createElement('div');n.className='notifyBox';n.innerText=msg;document.body.appendChild(n);setTimeout(()=>{n.style.opacity='0';setTimeout(()=>n.remove(),500);},1800);}
-function showStar(){const s=document.createElement('div');s.className='star';s.innerText='⭐';document.body.appendChild(s);setTimeout(()=>s.remove(),900);}
+/* ---------- 停止闪烁 ---------- */
+function stopFlash(){
+  flashCells.forEach(c=>c.classList.remove('flash'));
+  flashCells=[];
+}
+
+/* ---------- 隐藏格子 ---------- */
+function hideGridHint(){
+  document.getElementById('gridHint').style.display='none';
+}
+
+/* ---------- 语音提示 ---------- */
+function playVoice(b, remain){
+  let msg = new SpeechSynthesisUtterance(`剪掉 ${b} 个，还剩 ${remain} 个`);
+  msg.lang = "zh-CN";
+  speechSynthesis.speak(msg);
+}
+
+/* ---------- stats ---------- */
+function updateStats(){
+  document.getElementById("stats").innerText =
+    `本题：${currentA} - ${currentB}`;
+}
+
+/* ---------- 工具 ---------- */
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 </script>
+
 </body>
 </html>
