@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>一年级减法训练（最终版 v8）</title>
+<title>一年级减法训练（V9 - 数形联结）</title>
 <style>
 :root{
   --bg1:#f9fff4; --bg2:#e7ffe2; --accent:#2e8a3b; --gridAccent:#ffa94d;
@@ -37,7 +37,16 @@ input[type="number"]{width:120px;padding:6px;font-size:1em;border-radius:6px;bor
 #stats{margin-top:8px;color:#444;font-size:1em;}
 
 /* grid (structure) */
-#gridHint{display:none;margin-top:14px;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+/* keep area always occupying vertical space to avoid layout jumps */
+#gridHint{
+  margin-top:12px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:150px;        /* fixed space so question doesn't jump */
+  visibility:hidden;      /* use visibility so it still occupies space */
+}
 .gridBox{
   display:grid;grid-template-columns:repeat(5,50px);grid-template-rows:repeat(2,50px);gap:8px;
 }
@@ -89,9 +98,9 @@ input[type="number"]{width:120px;padding:6px;font-size:1em;border-radius:6px;bor
 </head>
 <body>
 
-<h1>一年级减法训练（最终版 v8）</h1>
+<h1>一年级减法训练（V9）</h1>
 
-<!-- 首页：模式与专项选择 -->
+<!-- 首页 -->
 <div id="modeSelect" class="panel">
   <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">
     <button onclick="enterOrdinary()">普通模式（错了才显示格子）</button>
@@ -122,7 +131,7 @@ input[type="number"]{width:120px;padding:6px;font-size:1em;border-radius:6px;bor
 
 <!-- 游戏区 -->
 <div id="game" class="panel" style="display:none;">
-  <div id="topBar">
+  <div id="topBar" style="display:flex;justify-content:space-between;align-items:center;">
     <div id="modeTag">模式</div>
     <div>
       <button id="returnBtn" onclick="returnHome()">🏠 返回首页</button>
@@ -131,8 +140,8 @@ input[type="number"]{width:120px;padding:6px;font-size:1em;border-radius:6px;bor
 
   <div id="stats">答对: 0 | 错误: 0 | 连对: 0</div>
 
-  <!-- 格子 + 数字标签 -->
-  <div id="gridHint" style="margin-top:12px;display:flex;flex-direction:column;align-items:center;">
+  <!-- 格子（始终占位，使用 visibility 控制可见性） -->
+  <div id="gridHint" style="display:flex;flex-direction:column;align-items:center;">
     <div class="gridBox" id="gridBox"></div>
     <div id="gridNumberLabel" style="margin-top:6px;font-size:1.6em;color:#ff7a00;font-weight:700;"></div>
   </div>
@@ -183,7 +192,7 @@ let wrongQuestions = []; // store as "A-B"
 let lastFlashInterval = null;
 
 /* -------------------
-   反馈展示（短暂、简洁）
+   反馈展示（短暂）
    ------------------- */
 function showFeedback(text, ok=true){
   const box = document.createElement('div');
@@ -214,7 +223,7 @@ function enterSmartMode(){
   flashTime = baseFlash;
   correctStreak = 0;
   mode = 'smart';
-  // small entry notify (not about times)
+  // small entry notify (no time details)
   const entry = document.createElement('div');
   entry.className = 'notifyBox'; entry.innerText = '进入智能专项训练：' + sel.join(',') + '（开始）';
   document.body.appendChild(entry);
@@ -263,7 +272,7 @@ function nextQuestion(){
   } else if(mode === 'smart'){
     currentA = specialSet[Math.floor(Math.random() * specialSet.length)];
     currentB = randInt(1, Math.max(1, currentA - 1)); // prefer non-zero for practice
-    // show flash according to flashTime
+    // show flash according to flashTime (use visibility)
     if(flashTime > 0){
       showGrid(currentA, true);
       setTimeout(()=>{ hideGrid(); }, flashTime);
@@ -290,20 +299,23 @@ function showGrid(a, showLabel){
     box.appendChild(d);
   }
   document.getElementById('gridNumberLabel').innerText = showLabel ? a : '';
-  document.getElementById('gridHint').style.display = 'flex';
+  // use visibility so area keeps its height
+  document.getElementById('gridHint').style.visibility = 'visible';
 }
 
 /* hide grid */
 function hideGrid(){
-  document.getElementById('gridHint').style.display = 'none';
+  // hide but keep space
+  document.getElementById('gridHint').style.visibility = 'hidden';
   document.getElementById('gridBox').innerHTML = '';
   document.getElementById('gridNumberLabel').innerText = '';
 }
 
 /* -------------------
    错误时：显示被减数 A 的格子，并让“被剪掉的 B 个格子”闪烁
-   removedIndices = first B filled cells (从上排左到右、再到下排左到右)
-   例如 A=8, B=6 -> indices 0..5 闪烁 (上5 -> 0..4, 再下排第1 -> index5)
+   New rule:
+     - if b < 5: flash from LAST filled cell backwards (a-1, a-2, ...)
+     - if b >=5: flash from first filled cell forwards (0,1,2...)
    ------------------- */
 function showGridWithRemovedFlash(a, b){
   stopAllFlash(); // ensure previous cleared
@@ -318,21 +330,29 @@ function showGridWithRemovedFlash(a, b){
     cells.push(d);
   }
   document.getElementById('gridNumberLabel').innerText = a;
-  document.getElementById('gridHint').style.display = 'flex';
+  document.getElementById('gridHint').style.visibility = 'visible';
 
-  // removed indices: first B filled cells (0..B-1)
+  // determine removed indices per new rule
   const removedIndices = [];
-  for(let i=0;i<b && i<a;i++){
-    removedIndices.push(i);
+  if(b < 5){
+    // last b filled cells: indices a-1 down to a-b
+    for(let i = a - 1; i >= a - b; i--){
+      if(i >= 0) removedIndices.push(i);
+    }
+  } else {
+    // first b filled cells: indices 0..b-1 (but limited by a)
+    for(let i = 0; i < b && i < a; i++){
+      removedIndices.push(i);
+    }
   }
 
-  // apply CSS flash class
+  // apply flash class to removed cells
   removedIndices.forEach(idx => {
     if(cells[idx]) cells[idx].classList.add('flash');
   });
 
-  // store interval id for safe cleanup
-  lastFlashInterval = setInterval(()=> { /* no-op, used only to keep handle */ }, 1000);
+  // keep a small interval handle so we can clear later
+  lastFlashInterval = setInterval(()=>{}, 1000);
 }
 
 /* stop flashing & clear interval */
