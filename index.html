@@ -380,7 +380,7 @@ function submitAnswer(){
    ------------------- */
 function adjustFlashOnCorrect(){
   // thresholds at 5,10,15 correct streak
-  if(correctStreak === 5 && flashTime > baseFlash * 0.6){
+  /*if(correctStreak === 5 && flashTime > baseFlash * 0.6){
     flashTime = Math.round(baseFlash * 0.6);
     notify('👏 很棒！闪现缩短为 ' + flashTime + ' ms');
   } else if(correctStreak === 10 && flashTime > baseFlash * 0.3){
@@ -389,10 +389,10 @@ function adjustFlashOnCorrect(){
   } else if(correctStreak === 15 && flashTime > 0){
     flashTime = 0;
     notify('🎉 进入无闪现阶段，纯心算训练开始！');
-  }
+  }*/
 }
 function adjustFlashOnWrong(){
-  if(flashTime === 0){
+  /*if(flashTime === 0){
     flashTime = Math.round(baseFlash * 0.3);
     notify('⚠️ 错题，闪现回退到 ' + flashTime + ' ms');
   } else if(flashTime <= Math.round(baseFlash * 0.3)){
@@ -401,7 +401,7 @@ function adjustFlashOnWrong(){
   } else if(flashTime <= Math.round(baseFlash * 0.6)){
     flashTime = baseFlash;
     notify('⚠️ 错题，闪现回退到 ' + baseFlash + ' ms');
-  }
+  }*/
 }
 
 /* -------------------
